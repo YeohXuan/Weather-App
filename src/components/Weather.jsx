@@ -33,6 +33,7 @@ export default function Weather() {
 
   const fetchWeather = async (city) => {
     inputRef.current.value = "";
+    inputRef.current.blur();
     if (!city) {
       alert("Enter city name");
       return;
