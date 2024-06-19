@@ -15,4 +15,22 @@ body {
 main {
   min-height: 100vh;
   display: grid;
+  place-items: center;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background-color: #cdd0ff;
+  place-self: center;
+  min-width: 350px;
+  padding: 1.5625em;
+  border-radius: 20px;
+}
+
+@media screen and (max-width: 768px) {
+  .app {
+    width: 90%;
+  }
 }
