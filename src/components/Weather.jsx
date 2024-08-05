@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "./Weather.css";
 import clear_icon from "../assets/clear.png";
 import cloud_icon from "../assets/cloud.png";
@@ -30,6 +30,10 @@ export default function Weather() {
   const inputRef = useRef();
   const [weatherData, setWeatherData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchParam, setSearchParam] = useState("");
+  const [filteredCities, setFilteredCities] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [showDropDown, setShowDropDown] = useState(false);
 
   const fetchWeather = async (city) => {
     inputRef.current.value = "";
@@ -66,8 +70,44 @@ export default function Weather() {
     }
   };
 
-  const handleSearch = () => {
-    fetchWeather(inputRef.current.value);
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const response = await fetch(
+          "https://countriesnow.space/api/v0.1/countries/population/cities"
+        );
+        const data = await response.json();
+        if (data) {
+          setLocations(data.data);
+          console.log(data.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch locations");
+      }
+    };
+
+    fetchLocations();
+  }, []);
+
+  useEffect(() => {
+    if (searchParam.length >= 1) {
+      const filtered = locations.filter((item) =>
+        item.city.toLowerCase().includes(searchParam.toLowerCase())
+      );
+      setFilteredCities(filtered);
+      setShowDropDown(true);
+    } else {
+      setShowDropDown(false);
+    }
+  }, [searchParam, locations]);
+
+  const handleSearch = (city) => {
+    setShowDropDown(false);
+    fetchWeather(city || inputRef.current.value);
+  };
+
+  const handleChange = (e) => {
+    setSearchParam(e.target.value);
   };
 
   const handleKeyDown = (event) => {
@@ -85,7 +125,23 @@ export default function Weather() {
           className="input"
           placeholder="Search"
           onKeyDown={handleKeyDown}
+          onChange={handleChange}
         />
+
+        {showDropDown && (
+          <div className="dropdown">
+            {filteredCities.map((city, index) => (
+              <div
+                key={index}
+                className="dropdown-item"
+                onClick={() => handleSearch(city.city)}
+              >
+                {city.city}, {city.country}
+              </div>
+            ))}
+          </div>
+        )}
+
         <i className="fa-solid fa-magnifying-glass" onClick={handleSearch}></i>
       </div>
       {isLoading ? (
